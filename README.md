@@ -1,13 +1,13 @@
-#  PokéMatch — Pokémon Memory Game
+#  PokeMatch — Pokemon Memory Game
 
-A simple, fun **memory card game** built with **HTML, CSS, and JavaScript**, powered by the **PokéAPI**.  
-Flip cards, find pairs of Pokémon, and see how fast you can finish the board!
+A simple, fun **memory card game** built with **HTML, CSS, and JavaScript**, powered by the **PokeAPI**.  
+Flip cards, find pairs of Pokemon, and see how fast you can finish the board!
 
 ---
 
 ##  Features
 - 4 × 4 grid (16 cards, 8 pairs to match)  
-- Real Pokémon sprites fetched live from [PokeAPI](https://pokeapi.co/)  
+- Real Pokemon sprites fetched live from [PokeAPI](https://pokeapi.co/)  
 - Timer that starts on your first move  
 - "New Game" button to reset and reshuffle  
 - Smooth card-flip animations  
@@ -35,7 +35,7 @@ Example:
 - **HTML5** → structure  
 - **CSS3** → styling, layout, animations  
 - **JavaScript (ES6)** → game logic  
-- **PokeAPI** → fetch Pokémon sprites dynamically  
+- **PokeAPI** → fetch Pokemon sprites dynamically  
 
 ---
 
@@ -52,7 +52,7 @@ Example:
 ---
 
 ## Acknowledgements
-- [PokéAPI](https://pokeapi.co/) for the Pokémon data  
+- [PokéAPI](https://pokeapi.co/) for the Pokemon data  
 - Inspired by the classic **Memory Card Game**  
 
 ---
