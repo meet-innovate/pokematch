@@ -35,7 +35,7 @@ Example:
 - **HTML5** → structure  
 - **CSS3** → styling, layout, animations  
 - **JavaScript (ES6)** → game logic  
-- **PokéAPI** → fetch Pokémon sprites dynamically  
+- **PokeAPI** → fetch Pokémon sprites dynamically  
 
 ---
 

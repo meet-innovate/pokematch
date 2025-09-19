@@ -1,30 +1,26 @@
-// =======================================================
-// PokéMatch 
-// =======================================================
+// Get important elements from the page
+const board = document.getElementById("board"); // the grid container where all cards go
+const timeEl = document.getElementById("time"); //
+const newBtn = document.getElementById("newGameBtn");
 
-// ---------- Get important elements from the page ----------
-var board = document.getElementById("board"); // the grid container where all cards go
-var timeEl = document.getElementById("time"); // the timer display (mm:ss)
-var newBtn = document.getElementById("newGameBtn"); // button to start a new game
+//  Game size & state
+const GRID_SIZE = 16; // total cards. (4 X 4)
+const PAIRS = GRID_SIZE / 2; // number of unique Pokemon faces
 
-// ---------- Game size & state ----------
-var GRID_SIZE = 16; // total cards (must be even). 16 = 4x4
-var PAIRS = GRID_SIZE / 2; // number of unique Pokémon faces
-
-// I will store the card data here, like: [{ key: "poke-25", imgUrl: "..." }, ...]
+//  store the card data
 var deck = [];
 
-// For clicking logic (remember the two selected cards)
+// For clicking logic (two selected cards)
 var firstCard = null;
 var secondCard = null;
-var isLocked = false; // when true, ignore clicks (during flip-back delay)
-var matches = 0; // how many cards matched so far (goes up by 2 on each match)
+var isLocked = false; // when true, ignore clicks
+var matches = 0; // cards matched so far this goes up by 2 on each match
 
-// ---------- Timer ----------
+//  Timer
 var timerId = null; // interval id
-var startTime = null; // when the timer started (in milliseconds)
+var startTime = null; //  timer started (in milliseconds)
 
-// Turn seconds into "mm:ss" 
+// Turn seconds into "mm:ss" format
 function formatTime(sec) {
   var m = Math.floor(sec / 60);
   var s = Math.floor(sec % 60);
@@ -34,7 +30,7 @@ function formatTime(sec) {
 }
 
 function startTimer() {
-  // start only once (first click)
+  // start only once, first click
   if (timerId) return;
   startTime = Date.now();
   timerId = setInterval(function () {
@@ -46,11 +42,11 @@ function startTimer() {
 function stopTimer() {
   if (!timerId) return;
   clearInterval(timerId);
-  timerId = null;
+  timerId = null; //reset
 }
 
-// ---------- PokeAPI helpers ----------
-// Get one Pokémon image URL by id.
+// PokeAPI
+// Get one Pokemon image URL by id.
 // I tried "official artwork" first. If not there, I use the normal front sprite.
 function fetchPokemonSprite(id) {
   return fetch("https://pokeapi.co/api/v2/pokemon/" + id)
@@ -61,7 +57,7 @@ function fetchPokemonSprite(id) {
       return res.json();
     })
     .then(function (data) {
-      // Carefully check each level (no optional chaining)
+      // checks each level
       var artwork = null;
       if (
         data &&
@@ -78,12 +74,12 @@ function fetchPokemonSprite(id) {
     });
 }
 
-// Get "count" unique Pokémon faces (ids from 1..151) and return an array of { key, imgUrl }
+// Get "count" unique Pokemon faces ids from 1..151 and return an array of { key, imgUrl }
 function getPokemonFaces(count) {
-  // Pick unique random ids the beginner way using a Set
+  // Pick unique random ids using a Set
   var idsSet = new Set();
   while (idsSet.size < count) {
-    var randomId = 1 + Math.floor(Math.random() * 151); // Gen 1 range
+    var randomId = 1 + Math.floor(Math.random() * 151);
     idsSet.add(randomId);
   }
   var idList = Array.from(idsSet);
@@ -95,14 +91,14 @@ function getPokemonFaces(count) {
   }
 
   return Promise.all(promises).then(function (urls) {
-    // If any url is missing, it fail so this can show a friendly alert
+    // If any url is missing, this can show a friendly alert
     for (var j = 0; j < urls.length; j++) {
       if (!urls[j]) {
-        throw new Error("Missing sprite");
+        throw new Error("Missing sprite..!");
       }
     }
 
-    // Make a array of objects { key, imgUrl } (no fancy map/flatMap)
+    // Make a array of objects { key, imgUrl }
     var faces = [];
     for (var k = 0; k < idList.length; k++) {
       faces.push({
@@ -114,22 +110,22 @@ function getPokemonFaces(count) {
   });
 }
 
-// ---------- Shuffle  ----------
+//  Shuffle
 function shuffle(arr) {
   return arr.sort(function () {
     return Math.random() - 0.5;
   });
 }
 
-// ---------- Build the full deck of cards ----------
-//  duplicating each face to make pairs, then shuffle the 16 items.
+//  Build the full deck of cards
+//  duplicating each face for pairs, then shuffle the 16 items.
 function buildDeck() {
   return getPokemonFaces(PAIRS).then(function (faces) {
     var pairs = [];
-    // Manually duplicate each face 
+    //  duplicate each face
     for (var i = 0; i < faces.length; i++) {
       var f = faces[i];
-      // Push two separate objects so they are different items in memory
+      // Push two separate objects
       pairs.push({ key: f.key, imgUrl: f.imgUrl });
       pairs.push({ key: f.key, imgUrl: f.imgUrl });
     }
@@ -137,11 +133,11 @@ function buildDeck() {
   });
 }
 
-// ---------- Create one card element (DOM) ----------
+// Create one card element (DOM)
 function cardElement(card, index) {
   // I build:
   // <div class="memory-card" data-key="..." data-index="...">
-  //   <img class="front-face" src="(pokemon url)" alt="Pokémon">
+  //   <img class="front-face" src="(pokemon url)" alt="Pokemon">
   //   <img class="back-face"  src="img/back.png" alt="Hidden">
   // </div>
 
@@ -149,30 +145,29 @@ function cardElement(card, index) {
   el.className = "memory-card";
   el.setAttribute("data-key", card.key);
   el.setAttribute("data-index", String(index));
-  // (I would set tabIndex for keyboard users, but keeping it basic)
+
   // el.tabIndex = 0;
 
   var front = document.createElement("img");
   front.className = "front-face";
   front.src = card.imgUrl;
-  front.alt = "Pokémon";
-  
+  front.alt = "Pokemon";
 
   var back = document.createElement("img");
   back.className = "back-face";
-  back.src = "img/back.png"; // make sure this file exists
-  back.alt = "Hidden";
+  back.src = "img/back.png"; // static back image for all card
+  back.alt = "Something went wrong!!";
 
   el.appendChild(front);
   el.appendChild(back);
 
-  // When user clicks a card, it handle flip/match logic
+  // handles flip/match logic when clicked by user
   el.addEventListener("click", onCardClick);
 
   return el;
 }
 
-// ---------- Render the whole board ----------
+//  Render entire board
 function renderBoard() {
   // remove old cards
   board.innerHTML = "";
@@ -183,72 +178,82 @@ function renderBoard() {
   }
 }
 
-// ---------- Click / Match Logic ----------
+//  Click / Match Logic
 function onCardClick(e) {
   var cardEl = e.currentTarget;
 
-  // If we are in the middle of a flip-back delay, ignore clicks
-  if (isLocked) return;
+  if (isLocked) return; // Ignore clicks during flip-back
 
-  // If this card is already flipped face-up, ignore
-  if (cardEl.classList.contains("flip")) return;
+  if (cardEl.classList.contains("flip")) return; // Ignore if card already flipped
 
-  // Start timer on the very first user action
   if (!timerId) {
+    // Start timer on first click
     startTimer();
   }
 
-  // Flip this card
+  // Flip's the card
   cardEl.classList.add("flip");
 
-  // If we don't have a first selected card yet, store this and wait for second
+  // Save first card, wait for second
   if (!firstCard) {
     firstCard = cardEl;
     return;
   }
 
-  // Now this click is the second card
+  // second card
   secondCard = cardEl;
-  isLocked = true; // block extra clicks until it finish checking
+  isLocked = true; // block extra clicks while checking
 
-  // Compare using the data-key that I set when building the card
+  // Compare using data-key
   var isMatch =
     firstCard.getAttribute("data-key") === secondCard.getAttribute("data-key");
 
   if (isMatch) {
-    // If they match, stop future clicks on these two
+    // Match: disable clicks on both
     firstCard.removeEventListener("click", onCardClick);
     secondCard.removeEventListener("click", onCardClick);
 
-    matches += 2; // we matched two more cards
+    matches += 2;
     resetTurn();
     checkWin();
   } else {
-    // If not a match, show the second card briefly, then flip both back
+    //No match: flip back after short delay
     setTimeout(function () {
       firstCard.classList.remove("flip");
       secondCard.classList.remove("flip");
       resetTurn();
-    }, 800); // small delay so player can see
+    }, 800);
   }
 }
 
-// Clear the temporary selection and unlock the board for the next clicks
+// Reset selection and unlock board
 function resetTurn() {
   firstCard = null;
   secondCard = null;
   isLocked = false;
 }
 
-// When all cards are matched, stop the timer and notify the player
+//  win: stop timer & show message
+// function checkWin() {
+//   if (matches === GRID_SIZE) {
+//     stopTimer();
+//     alert("You finished in " + timeEl.textContent + "!");
+//   }
+// }
+
+/*  win: stop timer & show message */
 function checkWin() {
   if (matches === GRID_SIZE) {
     stopTimer();
-    alert("You finished in " + timeEl.textContent + "!");
+    const winEl = document.getElementById("winner");
+    if (winEl) {
+      winEl.textContent = "You finished in " + timeEl.textContent + "!";
+      winEl.style.display = "block"; 
+    }
   }
 }
 
-// ---------- Start a brand new game (called on load & when pressing the button) ----------
+// Start/ reset game
 function newGame() {
   stopTimer();
   timeEl.textContent = "00:00";
@@ -257,20 +262,27 @@ function newGame() {
   secondCard = null;
   isLocked = false;
 
-  // Build a fresh deck, then render
+  // clear old win msg
+  const winEl = document.getElementById("winner");
+  if (winEl) {
+    winEl.style.display = "none"; // hide it again
+    winEl.textContent = ""; // remove old text
+  }
+
+  // Build deck and render
   buildDeck()
     .then(function (builtDeck) {
       deck = builtDeck;
       renderBoard();
     })
     .catch(function () {
-      // If PokeAPI fails or images are missing
+      // If PokeAPI fails or images missing
       alert("PokeAPI fetch failed. Please check your internet and reload.");
     });
 }
 
-// When the button is clicked, start a new game
+// Button: start new game
 newBtn.addEventListener("click", newGame);
 
-// Start once when the page loads
+// Auto-start on page load
 newGame();
