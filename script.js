@@ -247,7 +247,7 @@ function checkWin() {
     stopTimer();
     const winEl = document.getElementById("winner");
     if (winEl) {
-      winEl.textContent = "You finished in " + timeEl.textContent + "!";
+      winEl.textContent = "Victory! Yourtime: " + timeEl.textContent + "!";
       winEl.style.display = "block"; 
     }
   }
