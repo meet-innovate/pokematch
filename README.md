@@ -1,4 +1,4 @@
-# PokéMatch (4×4 Memory Game)
+# PokeMatch (4×4 Memory Game)
 
 A simple 4×4 matching game built with **HTML, CSS, and vanilla JavaScript**. The game fetches Pokemon images from the **PokeAPI** and places 8 pairs randomly on the board. Flip two cards:
 - If they match → they stay revealed.
